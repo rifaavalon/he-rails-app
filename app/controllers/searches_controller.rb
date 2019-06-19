@@ -1,15 +1,16 @@
 class SearchesController < ApplicationController
   before_action :set_search, only: [:show, :update, :destroy]
 
+
   # GET /searches
   def index
-    @searches = Search.all
-
+    @game_engines, @errors = Igdb::Game_engines.random(query)
     render json: @searches
   end
 
   # GET /searches/1
   def show
+    @game_engines = Igdb::Game_engines.find(params[:id])
     render json: @search
   end
 
@@ -40,12 +41,18 @@ class SearchesController < ApplicationController
 
   private
     # Use callbacks to share common setup or constraints between actions.
-    def set_search
-      @search = Search.find(params[:id])
-    end
 
-    # Only allow a trusted parameter "white list" through.
-    def search_params
-      params.require(:search).permit(:companies, :name, :description, :url)
+    def query
+      params.fetch(:query, {})
     end
+    def clear_cache
+  params[:clear_cache].present?
+end
+
+def refresh_params
+  refresh = { clear_cache: true }
+  refresh.merge!({ query: query }) if query.present?
+  refresh
+end
+
 end
